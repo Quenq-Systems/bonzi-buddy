@@ -1,0 +1,102 @@
+/* Main container for the frameless pet */
+.bonzi-pet-container {
+    background: transparent !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+}
+
+/* Container for Bonzi GIF and his UI elements */
+.bonzi-pet-container petcontain {
+    width: 200px;
+    height: 160px;
+    display: block;
+    position: relative;
+}
+
+/* The Bonzi GIF itself */
+.bonzi-pet-container #pet {
+    width: 100%;
+    height: 100%;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.5));
+    cursor: grab;
+}
+.bonzi-pet-container #pet:active { cursor: grabbing; }
+
+/* Speech Bubble above Bonzi */
+.bonzi-pet-container .speech-bubble {
+    position: absolute;
+    bottom: 175px;
+    left: 51%;
+    transform: translateX(-50%);
+    width: 280px;
+    padding: 12px;
+    background-color: #f5f5d5;
+    border: 1px solid #000;
+    border-radius: 8px;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+    font-family: 'msPixelTahoma', 'Tahoma', sans-serif;
+    font-size: 13px;
+    z-index: 10;
+    visibility: hidden;
+    text-align: center;
+}
+.bonzi-pet-container .speech-bubble::after { /* The tail of the bubble */
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid #000;
+}
+
+/* Input field inside the bubble */
+.bonzi-pet-container #bonzi-input {
+    margin-top: 8px;
+    width: calc(100% - 10px);
+    border: 1px solid #7F9DB9;
+    padding: 2px;
+}
+
+/* Action buttons inside the bubble */
+.bonzi-pet-container #bonzi-menu {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+}
+.bonzi-pet-container #bonzi-menu winbutton {
+    flex-basis: calc(50% - 10px);
+}
+
+/* Modular close button */
+.bonzi-pet-container modularbuttons {
+    position: absolute;
+    transition: top 0.1s, right 0.1s, bottom 0.1s, left 0.1s;
+}
+.bonzi-pet-container modularbuttons btn {
+    position: relative;
+    display: block;
+    width: 12px; height: 12px;
+    border-radius: 3px;
+    border: 1px solid #000;
+    background: linear-gradient(to bottom, #fff, #ccc);
+    cursor: pointer;
+}
+.bonzi-pet-container modularbuttons btn.close:after {
+    content: "×";
+    position: absolute;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    line-height: 12px;
+    color: #000;
+    top: -1px;
+    left: 2px;
+}
