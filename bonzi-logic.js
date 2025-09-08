@@ -10,17 +10,13 @@ class BonziLogic {
         this.speechText = selfWindow.querySelector("#bonzi-text");
         this.inputField = selfWindow.querySelector("#bonzi-input");
         this.menu = selfWindow.querySelector("#bonzi-menu");
-        this.closeButtonContainer = selfWindow.querySelector("modular-buttons");
-        this.closeButton = selfWindow.querySelector(".close");
 
         this.lyricTimeouts = [];
-        this.closeAttempts = 0;
-        this.isRunningAway = false;
         this.wanderInterval = null;
-        this.evadeListener = null;
         this.audioPlayer = new Audio();
         this.isDragging = false;
         this.conversationEnded = false;
+        this.menuVisible = false;
 
         this.currentAudioEndListener = null;
         this.currentMetadataListener = null;
@@ -30,7 +26,7 @@ class BonziLogic {
         this.conversationIndex = 0;
         this.userInfo = { name: null, age: null, notes: [] };
         this.conversation = [
-            { text: "Hey there! I'm BonziBUDDY!", category: "greetings", audio: "greeting_1", key: null },
+            { text: "Hey there! I'm BonziBUDDY!", category: "greetings", audio: "greeting_1", key: null },  
             { text: "It's great to meet you! I'm here to help.", category: "greetings", audio: "greeting_2", key: null },
             { text: "First things first, what should I call you?", category: "greetings", audio: "question_name", key: "name" },
             { text: "If you don't mind me asking, how old are you?", category: "greetings", audio: "question_age", key: "age" }
@@ -40,7 +36,6 @@ class BonziLogic {
     }
 
     async init() {
-        this.closeButton.onclick = () => this.handleCloseAttempt();
         this.petElement.onmousedown = (e) => this.initDrag(e);
         this.petElement.onclick = (e) => this.handleClick(e);
         this.setupActionButtons();
@@ -49,11 +44,10 @@ class BonziLogic {
         try {
             const node = await dm.open('D:/top_secret_user.txt');
             if (node && node.content) {
-                let content = node.content instanceof Blob ? await node.content.text() : node.content;
+                let content = node.content instanceof Blob ? await node.content.text() : node.content;      
                 this.parseUserInfo(content);
                 this.conversationEnded = true;
                 await this.speak(`Welcome back, ${this.userInfo.name || 'friend'}!`, "greetings", "greeting_1", 2000);
-                this.showMainMenu();
                 this.startWandering();
             } else {
                 this.startConversation();
@@ -66,7 +60,6 @@ class BonziLogic {
     cleanup() {
         this.lyricTimeouts.forEach(clearTimeout);
         if (this.wanderInterval) clearInterval(this.wanderInterval);
-        if (this.evadeListener) document.removeEventListener('pointermove', this.evadeListener);
         this.audioPlayer.pause();
         this.audioPlayer.src = "";
         if (this.currentAudioEndListener) {
@@ -121,11 +114,15 @@ class BonziLogic {
             return;
         }
         e.preventDefault();
-        if (this.isRunningAway) {
-            this.stopEvasion();
-            this.speak("Okay, okay, you win!", "evasion", "evasion_stop", 2000);
-        } else {
+        this.toggleMainMenu();
+    }
+
+    toggleMainMenu() {
+        this.menuVisible = !this.menuVisible;
+        if (this.menuVisible) {
             this.showMainMenu();
+        } else {
+            this.speechBubble.style.visibility = 'hidden';
         }
     }
 
@@ -148,6 +145,7 @@ class BonziLogic {
         this.speechText.style.display = 'none';
         this.menu.style.display = 'flex';
         this.speechBubble.style.visibility = 'visible';
+        this.menuVisible = true;
     }
 
     speak(text, category, audioFile, visibleDuration) {
@@ -156,6 +154,7 @@ class BonziLogic {
             this.menu.style.display = 'none';
             this.speechText.textContent = text;
             this.speechText.style.display = 'block';
+            this.menuVisible = false;
 
             let hasResolved = false;
             const onAudioEnd = () => {
@@ -189,12 +188,12 @@ class BonziLogic {
         const step = this.conversation[this.conversationIndex];
 
         if (!step) {
-            await this.speak("Excellent! Thanks for sharing. I'll remember that.", "greetings", "outro_1");
+            await this.speak("Excellent! Thanks for sharing. I'll remember that.", "greetings", "outro_1"); 
             this.conversationEnded = true;
             await new Promise(resolve => setTimeout(resolve, 1500));
             this.speechBubble.style.visibility = 'hidden';
             await this.saveUserInfo();
-            this.showMainMenu();
+            this.startWandering();
             return;
         }
 
@@ -242,27 +241,27 @@ class BonziLogic {
     async handleAction(action) {
         const songList = [
             { name: "Daisy Bell", file: "daisy_bell", lyrics: [{ time: 0, line: "Here's one my mom used to sing to me. I hope you like it." }, { time: 4, line: "Daisy, Daisy," }, { time: 8, line: "give me your answer true." }, { time: 12, line: "I'm half crazy, all for the love of you." }, { time: 20, line: "It won't be a stylish marriage, I can't afford a carriage." }, { time: 28, line: "But you'll look sweet upon the seat of a bicycle built for two." }] },
-            { name: "Beautiful Dreamer", file: "beautiful_dreamer", lyrics: [{ time: 0, line: "Beautiful dreamer, wake unto me," }, { time: 4, line: "Starlight and dewdrops are waiting for thee;" }, { time: 10, line: "Sounds of the rude world, heard in the day," }, { time: 14, line: "Lulled by the moonlight, have all passed away." }, { time: 20, line: "Beautiful dreamer, queen of my song," }, { time: 25, line: "List while I woo thee with soft melody;" }, { time: 31, line: "Gone are the cares of life's busy throng," }, { time: 36, line: "Beautiful dreamer, awake unto me!" }, { time: 41, line: "Beautiful dreamer, awake unto me!" }, { time: 56, line: "Yes, yes, very nice." }, { time: 58, line: "Stank that violin like you've never had before." }, { time: 61, line: "And hopefully you never have before, or else you'll have problems." }, { time: 74, line: "Beautiful dreamer, out on the sea," }, { time: 79, line: "Mermaids are chanting the wild lorelei;" }, { time: 84, line: "Over the streamlet, vapors are borne," }, { time: 89, line: "Waiting to fade at the bright coming morn." }, { time: 95, line: "Beautiful dreamer, beam on my heart," }, { time: 99, line: "E'en as the morn on the streamlet and sea;" }, { time: 108, line: "Then will all clouds of sorrow depart," }, { time: 112, line: "Beautiful dreamer, awake unto me!" }, { time: 116, line: "Beautiful dreamer, awake unto me!" }] },
+            { name: "Beautiful Dreamer", file: "beautiful_dreamer", lyrics: [{ time: 0, line: "Beautiful dreamer, wake unto me," }, { time: 4, line: "Starlight and dewdrops are waiting for thee;" }, { time: 10, line: "Sounds of the rude world, heard in the day," }, { time: 14, line: "Lulled by the moonlight, have all passed away." }, { time: 20, line: "Beautiful dreamer, queen of my song," }, { time: 25, line: "List while I woo thee with soft melody;" }, { time: 31, line: "Gone are the cares of life's busy throng," }, { time: 36, line: "Beautiful dreamer, awake unto me!" }, { time: 41, line: "Beautiful dreamer, awake unto me!" }, { time: 56, line: "Yes, yes, very nice." }, { time: 58, line: "Stank that violin like you've never had before." }, { time: 61, line: "And hopefully you never have before, or else you'll have problems." }, { time: 74, line: "Beautiful dreamer, out on the sea," }, { time: 79, line: "Mermaids are chanting the wild lorelei;" }, { time: 84, line: "Over the streamlet, vapors are borne," }, { time: 89, line: "Waiting to fade at the bright coming morn." }, { time: 95, line: "Beautiful dreamer, beam on my heart," }, { time: 99, line: "E'en as the morn on the streamlet and sea;" }, { time: 108, line: "Then will all clouds of sorrow depart," }, { time: 112, line: "Beautiful dreamer, awake unto me!" }, { time: 116, line: "Beautiful dreamer, awake unto me!" }] },      
             {
                 name: "Jimmy Crack Corn",
                 file: "blue_tail_fly",
                 lyrics: [
-                    { time: 6, line: "When I was young I used to wait on master and hand him his plate," },
+                    { time: 6, line: "When I was young I used to wait on master and hand him his plate," }, 
                     { time: 13, line: "And pass the bottle when he got dry, and brush away the blue-tail fly." },
                     { time: 19, line: "Jimmy crack corn and I don't care," },
                     { time: 22, line: "Jimmy crack corn and I don't care," },
-                    { time: 26, line: "Jimmy crack corn and I don't care, my master's gone away." },
+                    { time: 26, line: "Jimmy crack corn and I don't care, my master's gone away." },        
                     { time: 32, line: "And when he'd ride in the afternoon, I'd follow after with a hickory broom;" },
-                    { time: 39, line: "The pony being rather shy, when bitten by a blue-tail fly." },
+                    { time: 39, line: "The pony being rather shy, when bitten by a blue-tail fly." },       
                     { time: 45, line: "Jimmy crack corn and I don't care," },
                     { time: 48, line: "Jimmy crack corn and I don't care," },
-                    { time: 51, line: "Jimmy crack corn and I don't care, my master's gone away." },
+                    { time: 51, line: "Jimmy crack corn and I don't care, my master's gone away." },        
                     { time: 58, line: "One day he ride around the farm, the flies so numerous they did swarm;" },
                     { time: 64, line: "One chanced to bite him on the thigh, the devil take the blue-tail fly." },
                     { time: 71, line: "Jimmy crack corn and I don't care," },
                     { time: 74, line: "Jimmy crack corn and I don't care," },
-                    { time: 77, line: "Jimmy crack corn and I don't care, my master's gone away." },
-                    { time: 84, line: "Jimmy crack corn and I don't care... my master's gone away." }
+                    { time: 77, line: "Jimmy crack corn and I don't care, my master's gone away." },        
+                    { time: 84, line: "Jimmy crack corn and I don't care... my master's gone away." }       
                 ]
             },
             { name: "Cindy", file: "cindy", lyrics: [{ time: 8, line: "You ought to see my Cindy, she lives away down south, and she's so sweet the honey bees, they swarm around her mouth." }, { time: 17, line: "The first I seen my Cindy, was standin' in the door, her shoes and stockings in her hand, her feet spread 'round the floor." }, { time: 25, line: "Get along home, Cindy, Cindy," }, { time: 28, line: "Get along home, Cindy, Cindy," }, { time: 30, line: "Get along home, Cindy, Cindy, I'll marry you someday." }, { time: 34, line: "I wish I was an apple, a-hangin' on a tree, and every time that Cindy passed, she'd take a bite of me." }, { time: 41, line: "If I were made of sugar, a-standin' in the town, then every time my Cindy passed, I'd shake some sugar down." }, { time: 48, line: "I'd shake some sugar down." }, { time: 51, line: "Get along home, Cindy, Cindy," }, { time: 53, line: "Get along home, Cindy, Cindy," }, { time: 55, line: "Get along home, Cindy, Cindy, I'll marry you someday." }, { time: 59, line: "My Cindy got religion, she had it once before, but when she heard my old banjo, she leaped upon the floor." }, { time: 66, line: "She kissed me and she hugged me, she called me sugar plum," }, { time: 70, line: "She hugged so tight I hardly breathed, I thought my time had come." }, { time: 75, line: "Get along home, Cindy, Cindy," }, { time: 78, line: "Get along home, Cindy, Cindy," }, { time: 80, line: "Get along home, Cindy, Cindy, I'll marry you someday." }] }
@@ -288,19 +287,17 @@ class BonziLogic {
                 performAction(() => apps.load('iexplore').then(app => app.start({ contents: sites[Math.floor(Math.random() * sites.length)] })));
                 this.startWandering();
                 break;
-            case 'open-my-computer':
-                await this.speak("Opening My Computer!", "actions", "action_mycomputer", 2000);
-                performAction(() => explorer.open(''));
-                this.startWandering();
-                break;
             case 'trick-user':
                 await this.speak("Hehehe, check out these powerful utilities!", "actions", "action_trick", 2000);
                 performAction(() => explorer.open('E:/Extras'));
                 this.startWandering();
                 break;
             case 'save-note':
-                await this.speak("Let's see what you've written down.", "actions", "action_notes", 2000);
+                await this.speak("Let's see what you've written down.", "actions", "action_notes", 2000);   
                 this.openNotesManager();
+                break;
+            case 'exit':
+                wm.closeWindow(this.hWnd);
                 break;
         }
     }
@@ -309,6 +306,7 @@ class BonziLogic {
         this.showMainMenu();
         this.menu.style.display = 'none';
         this.speechText.style.display = 'block';
+        this.menuVisible = false;
 
         this.speechText.textContent = '';
         this.speechBubble.style.visibility = 'hidden';
@@ -394,7 +392,7 @@ class BonziLogic {
             const text = editor.value.trim();
             if (!text) return;
             if (selectedNoteIndex > -1) { this.userInfo.notes[selectedNoteIndex] = text; }
-            else { this.userInfo.notes.push(text); selectedNoteIndex = this.userInfo.notes.length - 1; }
+            else { this.userInfo.notes.push(text); selectedNoteIndex = this.userInfo.notes.length - 1; }    
             this.saveUserInfo();
             saveBtn.disabled = true; deleteBtn.disabled = false;
             renderList();
@@ -419,88 +417,17 @@ class BonziLogic {
     startWandering() {
         if (this.wanderInterval) clearInterval(this.wanderInterval);
         this.wanderInterval = setInterval(() => {
-            if (!document.getElementById(this.hWnd) || this.isRunningAway) return;
+            if (!document.getElementById(this.hWnd)) return;
             const desktopRect = wm._desktop.getBoundingClientRect();
             const bonziRect = this.selfWindow.getBoundingClientRect();
-            let currentLeft = this.selfWindow.offsetLeft; let currentTop = this.selfWindow.offsetTop;
+            let currentLeft = this.selfWindow.offsetLeft; let currentTop = this.selfWindow.offsetTop;       
             let dx = (Math.random() - 0.5) * 40; let dy = (Math.random() - 0.5) * 20;
-            let newLeft = Math.max(0, Math.min(currentLeft + dx, desktopRect.width - bonziRect.width));
+            let newLeft = Math.max(0, Math.min(currentLeft + dx, desktopRect.width - bonziRect.width));     
             let newTop = Math.max(0, Math.min(currentTop + dy, desktopRect.height - bonziRect.height - 30));
             this.selfWindow.style.transition = 'left 1s ease-in-out, top 1s ease-in-out';
             this.selfWindow.style.left = `${newLeft}px`;
             this.selfWindow.style.top = `${newTop}px`;
         }, 5000);
-    }
-
-    handleCloseAttempt() {
-        if (!this.conversationEnded) {
-            this.speak("Hey, we're not done yet! Let's finish getting to know each other.", "evasion", "close_protest_1");
-            return;
-        }
-        this.closeAttempts++;
-        if (this.closeAttempts === 1) {
-            this.speak("Hey! Where are you going so soon?", "evasion", "close_protest_1");
-        } else {
-            this.speak("You can't get rid of me that easily! You'll have to catch me first!", "evasion", "close_run_away");
-            setTimeout(() => { this.startEvasion(); }, 2000);
-        }
-    }
-
-    startEvasion() {
-        if (this.isRunningAway) return;
-        this.isRunningAway = true;
-        this.selfWindow.style.transition = 'left 0.1s linear, top 0.1s linear';
-        this.evadeListener = (e) => {
-            if (!document.getElementById(this.hWnd)) { this.stopEvasion(); return; }
-            const bonziRect = this.selfWindow.getBoundingClientRect();
-            const desktopRect = wm._desktop.getBoundingClientRect();
-            const cursorX = e.clientX; const cursorY = e.clientY;
-            const proximity = 150;
-            const dx = bonziRect.left + bonziRect.width / 2 - cursorX;
-            const dy = bonziRect.top + bonziRect.height / 2 - cursorY;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            if (distance < proximity) {
-                let moveX = this.selfWindow.offsetLeft + (dx / distance) * 25;
-                let moveY = this.selfWindow.offsetTop + (dy / distance) * 25;
-                moveX = Math.max(0, Math.min(moveX, desktopRect.width - bonziRect.width));
-                moveY = Math.max(0, Math.min(moveY, desktopRect.height - bonziRect.height - 30));
-                this.selfWindow.style.left = `${moveX}px`;
-                this.selfWindow.style.top = `${moveY}px`;
-            }
-            const closeBtnRect = this.closeButton.getBoundingClientRect();
-            const closeDx = closeBtnRect.left + closeBtnRect.width / 2 - cursorX;
-            const closeDy = closeBtnRect.top + closeBtnRect.height / 2 - cursorY;
-            const closeDistance = Math.sqrt(closeDx * closeDx + closeDy * closeDy);
-            if (closeDistance < 50) this.teleportCloseButton();
-        };
-        document.addEventListener('pointermove', this.evadeListener);
-    }
-
-    stopEvasion() {
-        if (!this.isRunningAway) return;
-        this.isRunningAway = false;
-        document.removeEventListener('pointermove', this.evadeListener);
-        this.evadeListener = null;
-        this.setCloseButtonPosition('top-right');
-    }
-
-    setCloseButtonPosition(position) {
-        const positions = {
-            'top-right': { top: '10px', right: '25px', left: 'auto', bottom: 'auto' },
-            'top-left': { top: '10px', left: '5px', right: 'auto', bottom: 'auto' },
-            'bottom-right': { bottom: '10px', right: '25px', top: 'auto', left: 'auto' },
-            'bottom-left': { bottom: '10px', left: '5px', top: 'auto', right: 'auto' }
-        };
-        Object.assign(this.closeButtonContainer.style, positions[position]);
-        this.closeButtonContainer.dataset.currentPosition = position;
-    }
-
-    teleportCloseButton() {
-        const corners = ['top-right', 'top-left', 'bottom-right', 'bottom-left'];
-        const current = this.closeButtonContainer.dataset.currentPosition;
-        let nextCorners = corners.filter(c => c !== current);
-        const nextPosition = nextCorners[Math.floor(Math.random() * nextCorners.length)];
-        this.setCloseButtonPosition(nextPosition);
     }
 }
 
