@@ -76,7 +76,7 @@ Contributions are welcome. If you have a feature suggestion or a bug fix, please
 
 This project is a **simulation** and a work of parody created for entertainment and educational purposes. **It is NOT real spyware or malware.**
 
-The "personal information" BonziBUDDY asks for (name, country, etc.) is only used within the simulation for entertainment and educational purposes—you can even enter fake data. All data, including the notes you save, is stored locally in your browser's private storage for the `xp.quenq.com` website and is **never transmitted** off your computer. The `top_secret_user.txt` file is created on your *virtual* D: drive inside the simulator, not on your real computer's hard drive.
+The "personal information" BonziBUDDY asks for (name, age, etc.) is only used within the simulation for entertainment and educational purposes—you can even enter fake data. All data, including the notes you save, is stored locally in your browser's private storage for the `xp.quenq.com` website and is **never transmitted** off your computer. The `top_secret_user.txt` file is created on your *virtual* D: drive inside the simulator, not on your real computer's hard drive.
 
 <div align="center">
 
