@@ -40,9 +40,7 @@ This BonziBUDDY simulation has been rebuilt from the ground up to be feature-com
 
 *   **Interactive Personality:** Engage with Bonzi as he tells jokes from his classic repertoire, offers to surf the web, or tempts you with "powerful utilities" from the E: drive.
 
-*   **Advanced Evasion Mechanics:** Bonzi doesn't like being closed. After initial protests, he will actively flee your cursor and teleport his close button to evade clicks, offering a fun challenge to the user. Clicking on him directly will cancel the evasion.
-
-*   **Full OS Integration:** Bonzi interacts with the Reborn XP environment. He can open Internet Explorer, My Computer, and specific folders. He also saves a "secret" user file to your virtual `D:\` drive.
+*   **Full OS Integration:** Bonzi interacts with the Reborn XP environment. He can open Internet Explorer and specific folders. He also saves a "secret" user file to your virtual `D:\` drive.
 
 *   **Notes Manager:** Includes a fully functional notes utility where users can create, view, edit, and delete personal notes, which are then saved to their user file.
 
@@ -53,7 +51,7 @@ This BonziBUDDY simulation has been rebuilt from the ground up to be feature-com
 BonziBUDDY must be installed via the App Market inside Reborn XP.
 
 1.  **Launch Reborn XP:** Navigate to **[xp.quenq.com](https://xp.quenq.com/)** in your web browser.
-2.  **Open the App Market:** Once the desktop has loaded, click the **Start Menu**, navigate to **All Programs**, and launch the **Quenq App Market**.
+2.  **Open the App Market:** Once the desktop has loaded, click the **Start Menu**, navigate to **All Programs**, and launch the **App Market**.
 3.  **Find and Install:** Use the search bar to find **BonziBUDDY** and click the "Install" button.
 4.  **Run BonziBUDDY:** The installer will create a shortcut on your virtual Desktop and an entry in your Start Menu. Double-click either to launch him!
 
