@@ -35,10 +35,10 @@ class BonziLogic {
         this.init();
     }
 
-    async init() {
-        this.petElement.onmousedown = (e) => this.initDrag(e);
-        this.petElement.ontouchstart = (e) => this.initDrag(e);
-        this.petElement.onclick = (e) => this.handleClick(e);
+       async init() {
+        this.petElement.addEventListener('mousedown', (e) => this.dragStart(e));
+        this.petElement.addEventListener('touchstart', (e) => this.dragStart(e), { passive: false });
+        
         this.setupActionButtons();
         this.selfWindow.addEventListener('wm:windowClosed', () => this.cleanup(), { once: true });
 
@@ -73,61 +73,61 @@ class BonziLogic {
             this.currentMetadataListener = null;
         }
     }
-
-    initDrag(e) {
+    
+    dragStart(e) {
         e.preventDefault();
+        e.stopPropagation();
+
         clearInterval(this.wanderInterval);
         this.selfWindow.style.transition = 'none';
 
-        this.isDragging = false;
         const el = this.selfWindow;
+        const isTouchEvent = e.type.startsWith('touch');
 
-        const isTouchEvent = e.type === 'touchstart';
-        let pos3 = isTouchEvent ? e.touches[0].clientX : e.clientX;
-        let pos4 = isTouchEvent ? e.touches[0].clientY : e.clientY;
+        const startX = isTouchEvent ? e.touches[0].clientX : e.clientX;
+        const startY = isTouchEvent ? e.touches[0].clientY : e.clientY;
+        const startTop = el.offsetTop;
+        const startLeft = el.offsetLeft;
 
-        const doDrag = (ev) => {
+        let hasMoved = false;
+
+        const dragMove = (ev) => {
+            ev.stopPropagation();
+
+            hasMoved = true;
+            
             const currentX = isTouchEvent ? ev.touches[0].clientX : ev.clientX;
             const currentY = isTouchEvent ? ev.touches[0].clientY : ev.clientY;
+            
+            const dx = currentX - startX;
+            const dy = currentY - startY;
 
-            if (!this.isDragging) {
-                const distance = Math.sqrt(Math.pow(currentX - pos3, 2) + Math.pow(currentY - pos4, 2));
-                if (distance > 5) this.isDragging = true;
-            }
-
-            if (this.isDragging) {
-                if(isTouchEvent) ev.preventDefault();
-                let pos1 = pos3 - currentX;
-                let pos2 = pos4 - currentY;
-                pos3 = currentX;
-                pos4 = currentY;
-                el.style.top = (el.offsetTop - pos2) + "px";
-                el.style.left = (el.offsetLeft - pos1) + "px";
-            }
+            el.style.left = `${startLeft + dx}px`;
+            el.style.top = `${startTop + dy}px`;
         };
 
-        const endDrag = () => {
-            document.removeEventListener(isTouchEvent ? "touchmove" : "mousemove", doDrag);
-            document.removeEventListener(isTouchEvent ? "touchend" : "mouseup", endDrag);
+        const dragEnd = () => {
+            document.removeEventListener(isTouchEvent ? 'touchmove' : 'mousemove', dragMove);
+            document.removeEventListener(isTouchEvent ? 'touchend' : 'mouseup', dragEnd);
+            
+            if (!hasMoved) {
+                this.handleClick(e);
+            }
+
             this.selfWindow.style.transition = 'left 1s ease-in-out, top 1s ease-in-out';
-            setTimeout(() => {
-                this.startWandering();
-            }, 100);
+            this.startWandering();
         };
 
-        document.addEventListener(isTouchEvent ? "touchmove" : "mousemove", doDrag, { passive: !isTouchEvent });
-        document.addEventListener(isTouchEvent ? "touchend" : "mouseup", endDrag, { once: true });
+        document.addEventListener(isTouchEvent ? 'touchmove' : 'mousemove', dragMove, { passive: false });
+        document.addEventListener(isTouchEvent ? 'touchend' : 'mouseup', dragEnd, { once: true });
     }
 
     handleClick(e) {
         if (!this.conversationEnded) {
             return;
         }
-        if (this.isDragging) {
-            setTimeout(() => { this.isDragging = false; }, 0);
-            return;
-        }
         e.preventDefault();
+        e.stopPropagation();
         this.toggleMainMenu();
     }
 
