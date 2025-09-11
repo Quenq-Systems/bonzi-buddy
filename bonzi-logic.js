@@ -37,6 +37,7 @@ class BonziLogic {
 
     async init() {
         this.petElement.onmousedown = (e) => this.initDrag(e);
+        this.petElement.ontouchstart = (e) => this.initDrag(e);
         this.petElement.onclick = (e) => this.handleClick(e);
         this.setupActionButtons();
         this.selfWindow.addEventListener('wm:windowClosed', () => this.cleanup(), { once: true });
@@ -80,29 +81,42 @@ class BonziLogic {
 
         this.isDragging = false;
         const el = this.selfWindow;
-        let pos3 = e.clientX; let pos4 = e.clientY;
+
+        const isTouchEvent = e.type === 'touchstart';
+        let pos3 = isTouchEvent ? e.touches[0].clientX : e.clientX;
+        let pos4 = isTouchEvent ? e.touches[0].clientY : e.clientY;
 
         const doDrag = (ev) => {
+            const currentX = isTouchEvent ? ev.touches[0].clientX : ev.clientX;
+            const currentY = isTouchEvent ? ev.touches[0].clientY : ev.clientY;
+
             if (!this.isDragging) {
-                const distance = Math.sqrt(Math.pow(ev.clientX - pos3, 2) + Math.pow(ev.clientY - pos4, 2));
+                const distance = Math.sqrt(Math.pow(currentX - pos3, 2) + Math.pow(currentY - pos4, 2));
                 if (distance > 5) this.isDragging = true;
             }
+
             if (this.isDragging) {
-                ev.preventDefault();
-                let pos1 = pos3 - ev.clientX; let pos2 = pos4 - ev.clientY;
-                pos3 = ev.clientX; pos4 = ev.clientY;
+                if(isTouchEvent) ev.preventDefault();
+                let pos1 = pos3 - currentX;
+                let pos2 = pos4 - currentY;
+                pos3 = currentX;
+                pos4 = currentY;
                 el.style.top = (el.offsetTop - pos2) + "px";
                 el.style.left = (el.offsetLeft - pos1) + "px";
             }
         };
+
         const endDrag = () => {
-            document.removeEventListener("pointermove", doDrag);
-            document.removeEventListener("pointerup", endDrag);
+            document.removeEventListener(isTouchEvent ? "touchmove" : "mousemove", doDrag);
+            document.removeEventListener(isTouchEvent ? "touchend" : "mouseup", endDrag);
             this.selfWindow.style.transition = 'left 1s ease-in-out, top 1s ease-in-out';
-            this.startWandering();
+            setTimeout(() => {
+                this.startWandering();
+            }, 100);
         };
-        document.addEventListener("pointermove", doDrag);
-        document.addEventListener("pointerup", endDrag, { once: true });
+
+        document.addEventListener(isTouchEvent ? "touchmove" : "mousemove", doDrag, { passive: !isTouchEvent });
+        document.addEventListener(isTouchEvent ? "touchend" : "mouseup", endDrag, { once: true });
     }
 
     handleClick(e) {
@@ -110,7 +124,7 @@ class BonziLogic {
             return;
         }
         if (this.isDragging) {
-            this.isDragging = false;
+            setTimeout(() => { this.isDragging = false; }, 0);
             return;
         }
         e.preventDefault();
